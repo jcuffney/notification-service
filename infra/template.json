@@ -11,7 +11,7 @@
         "SESIdentity": {
             "Type": "AWS::SES::EmailIdentity",
             "Properties": {
-                "Domain": {
+                "EmailIdentity": {
                     "Fn::Sub": "no-reply@${DomainName}"
                 }
             }
