@@ -17,7 +17,7 @@
             "Type": "AWS::SES::EmailIdentity",
             "Properties": {
                 "EmailIdentity": {
-                    "Fn::Sub": "no-reply@${DomainName}"
+                    "Fn::Sub": "josephcuffney@gmail.com"
                 }
             }
         }

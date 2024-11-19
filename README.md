@@ -1,16 +1,15 @@
 # Notification Service
 
-- [x] sets up ses
-- [ ] email templates
-- [ ] lambdas to subscribe to events
+## Functionality
 
-## Future Work
-
-- Incoming emails (parse and take an action)
-- Cloudwatch dashboard
-- Store notifications in dynamodb
-- SMS
-- Push Notifications
+- [ ] send emails
+- [ ] cloudwatch dashboard for monitoring
+- [ ] define email templates
+- [ ] subscribe and respond to platform events
+    - on-user-created
+- [ ] store record of notifications in dynamodb
+- [ ] send sms
+- [ ] send push notifications
 
 ## Steps
 
