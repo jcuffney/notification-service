@@ -4,11 +4,16 @@
         "DomainName": {
             "Type": "AWS::SSM::Parameter::Value<String>",
             "Default": "/cuffney/main/domain",
-            "Description": "The ID of the Route 53 hosted zone"
+            "Description": "The domain name to use for the email identity"
+        },
+        "HostedZoneId": {
+            "Type": "AWS::SSM::Parameter::Value<String>",
+            "Default": "/cuffney/main/hosted-zone/id",
+            "Description": "The hosted zone id for the domain"
         }
     },
     "Resources": {
-        "SESIdentity": {
+        "SESEmailIdentity": {
             "Type": "AWS::SES::EmailIdentity",
             "Properties": {
                 "EmailIdentity": {
