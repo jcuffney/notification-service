@@ -1,20 +1,10 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
     "Parameters": {
-        "ApiName": {
-            "Type": "String",
-            "Default": "cuffney-api-gateway",
-            "Description": "The name of the HTTP API"
-        },
-        "StageName": {
-            "Type": "String",
-            "Default": "v1",
-            "Description": "The name of the stage"
-        },
         "DomainName": {
-            "Type": "String",
-            "Default": "api.cuffney.com",
-            "Description": "The custom domain name for the API"
+            "Type": "AWS::SSM::Parameter::Value<String>",
+            "Default": "/cuffney/main/domain",
+            "Description": "The ID of the Route 53 hosted zone"
         },
         "HostedZoneId": {
             "Type": "AWS::SSM::Parameter::Value<String>",
@@ -23,100 +13,91 @@
         }
     },
     "Resources": {
-        "HttpApi": {
-            "Type": "AWS::ApiGatewayV2::Api",
+        "SESIdentity": {
+            "Type": "AWS::SES::DomainIdentity",
             "Properties": {
-                "Name": {
-                    "Ref": "ApiName"
-                },
-                "ProtocolType": "HTTP"
-            }
-        },
-        "Stage": {
-            "Type": "AWS::ApiGatewayV2::Stage",
-            "Properties": {
-                "ApiId": {
-                    "Ref": "HttpApi"
-                },
-                "StageName": {
-                    "Ref": "StageName"
-                },
-                "AutoDeploy": true
-            }
-        },
-        "Certificate": {
-            "Type": "AWS::CertificateManager::Certificate",
-            "Properties": {
-                "DomainName": {
+                "Domain": {
                     "Ref": "DomainName"
-                },
-                "ValidationMethod": "DNS",
-                "DomainValidationOptions": [
-                    {
-                        "DomainName": {
-                            "Ref": "DomainName"
-                        },
-                        "HostedZoneId": {
-                            "Ref": "HostedZoneId"
-                        }
-                    }
-                ]
-            }
-        },
-        "ApiDomainName": {
-            "Type": "AWS::ApiGatewayV2::DomainName",
-            "Properties": {
-                "DomainName": {
-                    "Ref": "DomainName"
-                },
-                "DomainNameConfigurations": [
-                    {
-                        "CertificateArn": {
-                            "Ref": "Certificate"
-                        },
-                        "EndpointType": "REGIONAL"
-                    }
-                ]
-            }
-        },
-        "ApiMapping": {
-            "Type": "AWS::ApiGatewayV2::ApiMapping",
-            "Properties": {
-                "ApiId": {
-                    "Ref": "HttpApi"
-                },
-                "DomainName": {
-                    "Ref": "ApiDomainName"
-                },
-                "Stage": {
-                    "Ref": "StageName"
                 }
             }
         },
-        "DNSRecord": {
-            "Type": "AWS::Route53::RecordSet",
+        "DKIMRecords": {
+            "Type": "AWS::Route53::RecordSetGroup",
             "Properties": {
                 "HostedZoneId": {
                     "Ref": "HostedZoneId"
                 },
-                "Name": {
-                    "Ref": "DomainName"
-                },
-                "Type": "A",
-                "AliasTarget": {
-                    "DNSName": {
-                        "Fn::GetAtt": [
-                            "ApiDomainName",
-                            "RegionalDomainName"
+                "RecordSets": [
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                ".",
+                                [
+                                    "CNAME1",
+                                    {
+                                        "Ref": "DomainName"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "CNAME",
+                        "TTL": "1800",
+                        "ResourceRecords": [
+                            {
+                                "Fn::GetAtt": [
+                                    "SESIdentity",
+                                    "DkimDNSTokenName1"
+                                ]
+                            }
                         ]
                     },
-                    "HostedZoneId": {
-                        "Fn::GetAtt": [
-                            "ApiDomainName",
-                            "RegionalHostedZoneId"
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                ".",
+                                [
+                                    "CNAME2",
+                                    {
+                                        "Ref": "DomainName"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "CNAME",
+                        "TTL": "1800",
+                        "ResourceRecords": [
+                            {
+                                "Fn::GetAtt": [
+                                    "SESIdentity",
+                                    "DkimDNSTokenName2"
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "Name": {
+                            "Fn::Join": [
+                                ".",
+                                [
+                                    "CNAME3",
+                                    {
+                                        "Ref": "DomainName"
+                                    }
+                                ]
+                            ]
+                        },
+                        "Type": "CNAME",
+                        "TTL": "1800",
+                        "ResourceRecords": [
+                            {
+                                "Fn::GetAtt": [
+                                    "SESIdentity",
+                                    "DkimDNSTokenName3"
+                                ]
+                            }
                         ]
                     }
-                }
+                ]
             }
         }
     }

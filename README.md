@@ -1,6 +1,6 @@
-# Http Api Gateway
+# Notification Service
 
-> Creates a api gateway at `api.cuffney.com`
+- [x] sets up ses
 
 ## Steps
 

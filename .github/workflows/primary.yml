@@ -19,7 +19,7 @@ jobs:
     
     - name: Set Variables
       run: |
-        echo "STACK_NAME=http-api-gateway" >> $GITHUB_ENV
+        echo "STACK_NAME=notification-service" >> $GITHUB_ENV
         echo "TEMPLATE=./infra/template.json" >> $GITHUB_ENV
 
     - name: Configure AWS credentials
