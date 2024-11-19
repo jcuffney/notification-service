@@ -5,99 +5,15 @@
             "Type": "AWS::SSM::Parameter::Value<String>",
             "Default": "/cuffney/main/domain",
             "Description": "The ID of the Route 53 hosted zone"
-        },
-        "HostedZoneId": {
-            "Type": "AWS::SSM::Parameter::Value<String>",
-            "Default": "/cuffney/main/hosted-zone/id",
-            "Description": "The ID of the Route 53 hosted zone"
         }
     },
     "Resources": {
         "SESIdentity": {
-            "Type": "AWS::SES::DomainIdentity",
+            "Type": "AWS::SES::EmailIdentity",
             "Properties": {
                 "Domain": {
-                    "Ref": "DomainName"
+                    "Fn::Sub": "no-reply@${DomainName}"
                 }
-            }
-        },
-        "DKIMRecords": {
-            "Type": "AWS::Route53::RecordSetGroup",
-            "Properties": {
-                "HostedZoneId": {
-                    "Ref": "HostedZoneId"
-                },
-                "RecordSets": [
-                    {
-                        "Name": {
-                            "Fn::Join": [
-                                ".",
-                                [
-                                    "CNAME1",
-                                    {
-                                        "Ref": "DomainName"
-                                    }
-                                ]
-                            ]
-                        },
-                        "Type": "CNAME",
-                        "TTL": "1800",
-                        "ResourceRecords": [
-                            {
-                                "Fn::GetAtt": [
-                                    "SESIdentity",
-                                    "DkimDNSTokenName1"
-                                ]
-                            }
-                        ]
-                    },
-                    {
-                        "Name": {
-                            "Fn::Join": [
-                                ".",
-                                [
-                                    "CNAME2",
-                                    {
-                                        "Ref": "DomainName"
-                                    }
-                                ]
-                            ]
-                        },
-                        "Type": "CNAME",
-                        "TTL": "1800",
-                        "ResourceRecords": [
-                            {
-                                "Fn::GetAtt": [
-                                    "SESIdentity",
-                                    "DkimDNSTokenName2"
-                                ]
-                            }
-                        ]
-                    },
-                    {
-                        "Name": {
-                            "Fn::Join": [
-                                ".",
-                                [
-                                    "CNAME3",
-                                    {
-                                        "Ref": "DomainName"
-                                    }
-                                ]
-                            ]
-                        },
-                        "Type": "CNAME",
-                        "TTL": "1800",
-                        "ResourceRecords": [
-                            {
-                                "Fn::GetAtt": [
-                                    "SESIdentity",
-                                    "DkimDNSTokenName3"
-                                ]
-                            }
-                        ]
-                    }
-                ]
             }
         }
     }
