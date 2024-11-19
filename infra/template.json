@@ -1,0 +1,123 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Parameters": {
+        "ApiName": {
+            "Type": "String",
+            "Default": "cuffney-api-gateway",
+            "Description": "The name of the HTTP API"
+        },
+        "StageName": {
+            "Type": "String",
+            "Default": "v1",
+            "Description": "The name of the stage"
+        },
+        "DomainName": {
+            "Type": "String",
+            "Default": "api.cuffney.com",
+            "Description": "The custom domain name for the API"
+        },
+        "HostedZoneId": {
+            "Type": "AWS::SSM::Parameter::Value<String>",
+            "Default": "/cuffney/main/hosted-zone/id",
+            "Description": "The ID of the Route 53 hosted zone"
+        }
+    },
+    "Resources": {
+        "HttpApi": {
+            "Type": "AWS::ApiGatewayV2::Api",
+            "Properties": {
+                "Name": {
+                    "Ref": "ApiName"
+                },
+                "ProtocolType": "HTTP"
+            }
+        },
+        "Stage": {
+            "Type": "AWS::ApiGatewayV2::Stage",
+            "Properties": {
+                "ApiId": {
+                    "Ref": "HttpApi"
+                },
+                "StageName": {
+                    "Ref": "StageName"
+                },
+                "AutoDeploy": true
+            }
+        },
+        "Certificate": {
+            "Type": "AWS::CertificateManager::Certificate",
+            "Properties": {
+                "DomainName": {
+                    "Ref": "DomainName"
+                },
+                "ValidationMethod": "DNS",
+                "DomainValidationOptions": [
+                    {
+                        "DomainName": {
+                            "Ref": "DomainName"
+                        },
+                        "HostedZoneId": {
+                            "Ref": "HostedZoneId"
+                        }
+                    }
+                ]
+            }
+        },
+        "ApiDomainName": {
+            "Type": "AWS::ApiGatewayV2::DomainName",
+            "Properties": {
+                "DomainName": {
+                    "Ref": "DomainName"
+                },
+                "DomainNameConfigurations": [
+                    {
+                        "CertificateArn": {
+                            "Ref": "Certificate"
+                        },
+                        "EndpointType": "REGIONAL"
+                    }
+                ]
+            }
+        },
+        "ApiMapping": {
+            "Type": "AWS::ApiGatewayV2::ApiMapping",
+            "Properties": {
+                "ApiId": {
+                    "Ref": "HttpApi"
+                },
+                "DomainName": {
+                    "Ref": "ApiDomainName"
+                },
+                "Stage": {
+                    "Ref": "StageName"
+                }
+            }
+        },
+        "DNSRecord": {
+            "Type": "AWS::Route53::RecordSet",
+            "Properties": {
+                "HostedZoneId": {
+                    "Ref": "HostedZoneId"
+                },
+                "Name": {
+                    "Ref": "DomainName"
+                },
+                "Type": "A",
+                "AliasTarget": {
+                    "DNSName": {
+                        "Fn::GetAtt": [
+                            "ApiDomainName",
+                            "RegionalDomainName"
+                        ]
+                    },
+                    "HostedZoneId": {
+                        "Fn::GetAtt": [
+                            "ApiDomainName",
+                            "RegionalHostedZoneId"
+                        ]
+                    }
+                }
+            }
+        }
+    }
+}
